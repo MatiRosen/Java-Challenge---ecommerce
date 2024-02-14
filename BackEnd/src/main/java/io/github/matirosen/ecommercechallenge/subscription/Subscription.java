@@ -5,6 +5,8 @@ import io.github.matirosen.ecommercechallenge.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,6 +26,12 @@ public class Subscription {
 
     @Column(name = "price", nullable = false)
     private Double price;
+
+    @Column(name = "start_date", nullable = false)
+    private Date startDate;
+
+    @Column(name = "expiration_date", nullable = false)
+    private Date expirationDate;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)

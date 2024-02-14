@@ -5,6 +5,8 @@ import io.github.matirosen.ecommercechallenge.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 
 @RequiredArgsConstructor
 @Service
@@ -26,10 +28,15 @@ public class SubscriptionService {
             throw new RuntimeException("User already has a subscription");
         }
 
+        Date currentDate = new Date();
+        Date expirationDate = new Date(currentDate.getTime() + (long) subscriptionType.getDays() * 24 * 60 * 60 * 1000);
+
         Subscription subscription = Subscription.builder()
                 .user(user)
                 .type(subscriptionType)
                 .price(subscriptionType.getPrice())
+                .startDate(currentDate)
+                .expirationDate(expirationDate)
                 .build();
 
         subscriptionRepository.save(subscription);
