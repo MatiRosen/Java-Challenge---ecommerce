@@ -16,4 +16,12 @@ public class UserService {
     public User getUserById(Long id){
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    public UserDTO getUserDTOByEmail(String email) {
+        return new UserDTO(getUserByEmail(email));
+    }
+
+    private User getUserByEmail(String email){
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }

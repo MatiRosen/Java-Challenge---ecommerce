@@ -113,11 +113,13 @@ export default {
         .register(user)
         .then(function (response) {
           vue.addUser(
+            response.data.id,
             response.data.firstName,
             response.data.lastName,
             response.data.email,
             response.data.receiveNewsletter
           )
+          localStorage.setItem('token', response.data.token);
           vue.$router.push('/profile')
         })
         .catch(function (error) {

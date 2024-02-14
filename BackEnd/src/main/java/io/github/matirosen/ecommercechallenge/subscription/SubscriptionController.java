@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+
 @RequiredArgsConstructor
 @RequestMapping("/subscription")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -31,7 +33,15 @@ public class SubscriptionController {
     }
 
     @GetMapping("/types")
-    public ResponseEntity<SubscriptionType[]> getSubscriptionTypes() {
-        return ResponseEntity.ok(SubscriptionType.values());
+    public ResponseEntity<SubscriptionTypeResponse[]> getSubscriptionTypes() {
+        return ResponseEntity.ok(
+                Arrays.stream(SubscriptionType.values())
+                        .map(type ->
+                                new SubscriptionTypeResponse(
+                                        type.getName(),
+                                        type.getPrice(),
+                                        type.getDescription()
+                                ))
+                        .toArray(SubscriptionTypeResponse[]::new));
     }
 }

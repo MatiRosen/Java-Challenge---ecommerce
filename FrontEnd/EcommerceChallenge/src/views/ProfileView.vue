@@ -1,26 +1,40 @@
 <template>
   <section id="Profile" class="vh-100 gradient-custom">
-    <h1>Profile</h1>
-    <div class="user-info">
-      <p>Name: {{ user.name }}</p>
-      <p>Email: {{ user.email }}</p>
-      <p>Receive Newsletters: {{ user.receiveNewsletters ? 'Yes' : 'No' }}</p>
+    <div class="d-flex justify-content-center py-3">
+      <div class="card bg-dark text-white">
+        <div class="card-header">
+          <h2 class="card-title">Perfil</h2>
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">{{ user.firstName }} {{ user.lastName }}</h5>
+          <p class="card-text">Email: {{ user.email }}</p>
+          <p class="card-text">Suscripción: {{ subscription.type }}</p>
+          <p class="card-text">Receive Newsletters: {{ user.receiveNewsletters ? 'Si' : 'No' }}</p>
+        </div>
+      </div>
     </div>
   </section>
 </template>
 
 <script>
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '../stores/user';
+import { useSubscriptionStore } from '../stores/subscription';
+
 export default {
-  data() {
+  setup() {
+    const storeUser = useUserStore();
+    const { user } = storeToRefs(storeUser);
+
+    const storeSubscription = useSubscriptionStore();
+    const { subscription } = storeToRefs(storeSubscription);
+
     return {
-      user: {
-        name: 'John Doe',
-        email: 'johndoe@example.com',
-        receiveNewsletters: true
-      }
-    }
+      user,
+      subscription
+    };
   }
-}
+};
 </script>
 
 <style scoped>

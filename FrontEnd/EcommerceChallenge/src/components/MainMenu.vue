@@ -9,11 +9,12 @@
           <li class="nav-item">
             <RouterLink to="/" class="nav-link">Home</RouterLink>
           </li>
-          <li class="nav-item">
-            <div v-if="isAuthenticated">
+          <div v-if="isAuthenticated">
+            <li class="nav-item d-flex">
               <RouterLink to="/profile" class="nav-link">Perfil</RouterLink>
-            </div>
-          </li>
+              <RouterLink to="/subscriptions" class="nav-link">Suscripciones</RouterLink>
+            </li>
+          </div>
         </ul>
       </div>
       <div class="d-flex align-items-center">
@@ -46,6 +47,7 @@ const { removeUser } = storeUser
 
 const logout = () => {
   removeUser()
+  localStorage.removeItem('token')
 }
 </script>
 

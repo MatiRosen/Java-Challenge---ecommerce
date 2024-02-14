@@ -1,7 +1,9 @@
 package io.github.matirosen.ecommercechallenge.jwt;
 
+import io.github.matirosen.ecommercechallenge.user.User;
 import io.jsonwebtoken.Claims;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -22,8 +24,16 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String SECRET;
 
-    public String getToken(UserDetails userDetails) {
-        return getToken(new HashMap<>(), userDetails);
+    public String getToken(User user) {
+        HashMap<String, Object> claims = new HashMap<>();
+
+        claims.put("id", user.getId());
+        claims.put("firstName", user.getFirstName());
+        claims.put("lastName", user.getLastName());
+        claims.put("email", user.getEmail());
+        claims.put("receiveNewsletter", user.isReceiveNewsletter());
+
+        return getToken(claims, user);
     }
 
     private String getToken(Map<String, Object> claims, UserDetails userDetails) {
@@ -45,12 +55,13 @@ public class JwtService {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
+
     public boolean validateToken(String token, UserDetails userDetails) {
         final String email = getEmailFromToken(token);
         return email.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
-    private Claims getAllClaimsFromToken(String token) {
+    private Claims getAllClaimsFromToken(String token) throws JwtException, IllegalArgumentException {
         return Jwts.parser()
                 .verifyWith(getPublicSigningKey())
                 .build()

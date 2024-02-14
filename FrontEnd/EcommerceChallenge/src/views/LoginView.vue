@@ -45,23 +45,35 @@
 </template>
 
 <script>
-import { storeToRefs } from 'pinia'
-import { useUserStore } from '../stores/user'
-import userService from '../services/userService'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '../stores/user';
+import { useSubscriptionStore } from '../stores/subscription';
+import userService from '../services/userService';
+import subscriptionService from '../services/subscriptionService';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 export default {
   setup() {
-    const storeUser = useUserStore()
-    const { user } = storeToRefs(storeUser)
-    const { addUser } = storeUser
-    let { isAuthenticated } = storeToRefs(storeUser)
+    const storeUser = useUserStore();
+    const { user } = storeToRefs(storeUser);
+    const { addUser } = storeUser;
+    let { isAuthenticated } = storeToRefs(storeUser);
+
+    const storeSubscription = useSubscriptionStore();
+    const { userHasSubscription } = storeSubscription;
+    const { subscribe } = storeSubscription;
 
     return {
       user,
       addUser,
       isAuthenticated,
-      userService
-    }
+      userService,
+      axios,
+      userHasSubscription,
+      subscribe,
+      subscriptionService
+    };
   },
   data() {
     return {
@@ -70,28 +82,40 @@ export default {
         password: ''
       },
       vue: this
-    }
+    };
   },
   methods: {
     login: (user, vue) => {
       userService
         .login(user)
-        .then(function (response) {
-          vue.user.firstName = response.data.firstName
-          vue.addUser(
-            response.data.firstName,
-            response.data.lastName,
-            response.data.email,
-            response.data.receiveNewsletter
-          )
-          vue.$router.push('/profile')
+        .then(function (loginResponse) {
+          var token = loginResponse.data.token;
+          localStorage.setItem('token', token);
+          var decodedToken = jwtDecode(token);
+
+          var userId = decodedToken.id;
+          var firstName = decodedToken.firstName;
+          var lastName = decodedToken.lastName;
+          var email = decodedToken.email;
+          var receiveNewsletter = decodedToken.receiveNewsletter;
+
+          vue.addUser(userId, firstName, lastName, email, receiveNewsletter);
+
+          subscriptionService.getSubscriptionByUserId(userId).then(function (subscriptionResponse) {
+            vue.subscribe(
+              subscriptionResponse.data.id,
+              subscriptionResponse.data.type,
+              subscriptionResponse.data.price
+            );
+            vue.$router.push('/profile');
+          });
         })
         .catch(function (error) {
-          alert(error.response.data)
-        })
+          alert(error);
+        });
     }
   }
-}
+};
 </script>
 
 <style scoped>
