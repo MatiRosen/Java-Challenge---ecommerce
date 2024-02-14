@@ -29,6 +29,7 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET).permitAll()
+                                .requestMatchers(HttpMethod.POST, "/order/webhook").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManagement ->
