@@ -14,12 +14,10 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        UserDTO userDTO = userService.getUserById(id);
-
-        if (userDTO == null) {
+        try{
+            return ResponseEntity.ok(userService.getUserDTOById(id));
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
-
-        return ResponseEntity.ok(userDTO);
     }
 }

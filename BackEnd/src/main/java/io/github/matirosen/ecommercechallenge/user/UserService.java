@@ -9,11 +9,11 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id).orElse(null);
+    public UserDTO getUserDTOById(Long id) {
+        return new UserDTO(getUserById(id));
+    }
 
-        if (user == null) return null;
-
-        return new UserDTO(user);
+    public User getUserById(Long id){
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
