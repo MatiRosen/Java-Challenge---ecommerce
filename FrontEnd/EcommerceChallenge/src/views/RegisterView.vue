@@ -82,6 +82,7 @@
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../stores/user'
 import userService from '../services/userService'
+import { jwtDecode } from 'jwt-decode'
 
 export default {
   setup() {
@@ -112,14 +113,18 @@ export default {
       userService
         .register(user)
         .then(function (response) {
-          vue.addUser(
-            response.data.id,
-            response.data.firstName,
-            response.data.lastName,
-            response.data.email,
-            response.data.receiveNewsletter
-          )
-          localStorage.setItem('token', response.data.token);
+          var token = response.data.token;
+          localStorage.setItem('token', token);
+          var decodedToken = jwtDecode(token);
+
+          var userId = decodedToken.id;
+          var firstName = decodedToken.firstName;
+          var lastName = decodedToken.lastName;
+          var email = decodedToken.email;
+          var receiveNewsletter = decodedToken.receiveNewsletter;
+
+          vue.addUser(userId, firstName, lastName, email, receiveNewsletter);
+
           vue.$router.push('/profile')
         })
         .catch(function (error) {

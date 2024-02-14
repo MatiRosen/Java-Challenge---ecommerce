@@ -6,14 +6,17 @@ export const useSubscriptionStore = defineStore('subscription', {
       id: '',
       type: '',
       price: 0.0,
+      expirationDate: ""
     }
   }),
   actions: {
-    subscribe(id, type, price) {
+    subscribe(id, type, price, startDate, expirationDate) {
       Object.assign(this.subscription, {
         id,
         type,
-        price
+        price,
+        startDate,
+        expirationDate
       });
     },
     unsubscribe() {

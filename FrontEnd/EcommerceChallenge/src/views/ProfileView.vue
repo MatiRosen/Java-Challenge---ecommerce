@@ -8,8 +8,13 @@
         <div class="card-body">
           <h5 class="card-title">{{ user.firstName }} {{ user.lastName }}</h5>
           <p class="card-text">Email: {{ user.email }}</p>
-          <p class="card-text">Suscripción: {{ subscription.type }}</p>
           <p class="card-text">Receive Newsletters: {{ user.receiveNewsletters ? 'Si' : 'No' }}</p>
+          <div v-if="userHasSubscription">
+            <p class="card-text">Suscripción: {{ subscription.type }}</p>
+            <p class="card-text">Desde : {{ formatDate(subscription.startDate) }}</p>
+            <p class="card-text">Expira en: {{ formatDate(subscription.expirationDate) }}</p>
+          </div>
+          <p v-else class="card-text">Suscripción: No tiene</p>
         </div>
       </div>
     </div>
@@ -20,6 +25,7 @@
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '../stores/user';
 import { useSubscriptionStore } from '../stores/subscription';
+import { format } from 'date-fns';
 
 export default {
   setup() {
@@ -29,10 +35,21 @@ export default {
     const storeSubscription = useSubscriptionStore();
     const { subscription } = storeToRefs(storeSubscription);
 
+    const userHasSubscription = () => {
+      return useSubscriptionStore().userHasSubscription();
+    };
+
     return {
       user,
-      subscription
+      subscription,
+      format,
+      userHasSubscription
     };
+  },
+  methods: {
+    formatDate(date) {
+      return format(new Date(date), 'dd/MM/yyyy');
+    }
   }
 };
 </script>

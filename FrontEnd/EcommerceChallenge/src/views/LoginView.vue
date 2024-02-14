@@ -105,7 +105,9 @@ export default {
             vue.subscribe(
               subscriptionResponse.data.id,
               subscriptionResponse.data.type,
-              subscriptionResponse.data.price
+              subscriptionResponse.data.price,
+              subscriptionResponse.data.startDate,
+              subscriptionResponse.data.expirationDate
             );
             vue.$router.push('/profile');
           });
