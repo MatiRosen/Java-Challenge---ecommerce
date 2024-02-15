@@ -28,8 +28,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.GET).permitAll()
                                 .requestMatchers(HttpMethod.POST, "/order/webhook").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/subscription/types").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManagement ->
