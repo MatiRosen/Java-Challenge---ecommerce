@@ -2,6 +2,7 @@ package io.github.matirosen.ecommercechallenge.payment.stripe;
 
 import com.stripe.Stripe;
 import com.stripe.model.Charge;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import io.github.matirosen.ecommercechallenge.payment.*;
@@ -58,23 +59,30 @@ public class StripeService implements PaymentService {
 
     @Override
     public PaymentResponse charge(PaymentRequest paymentRequest) throws Exception {
-        Map<String, Object> chargeParams = new HashMap<>();
-        chargeParams.put("amount", paymentRequest.getAmount());
-        chargeParams.put("currency", paymentRequest.getCurrency());
-        chargeParams.put("description", paymentRequest.getDescription());
-        chargeParams.put("source", paymentRequest.getToken());
+        PaymentIntent intent = PaymentIntent.retrieve(paymentRequest.getToken());
 
-        Charge charge = Charge.create(chargeParams);
+        PaymentIntent confirmedIntent;
+        try{
+            confirmedIntent = intent.confirm();
+        } catch (Exception e) {
+            confirmedIntent = intent;
+        }
 
         Payment payment = Payment.builder()
-                .amount(Double.valueOf(charge.getAmount()))
-                .currency(charge.getCurrency())
-                .description(charge.getDescription())
+                .amount(paymentRequest.getAmount())
+                .currency(paymentRequest.getCurrency())
+                .description(paymentRequest.getDescription())
                 .platform(Platform.STRIPE)
+                .status(PaymentStatus.COMPLETED)
                 .build();
 
-        paymentRepository.save(payment);
+        try{
+            paymentRepository.save(payment);
+        } catch (Exception e) {
+            System.out.println("Error saving payment: " + e.getMessage());
+        }
 
-        return PaymentResponse.from(payment, charge.getId());
+
+        return PaymentResponse.from(payment, confirmedIntent.getId());
     }
 }

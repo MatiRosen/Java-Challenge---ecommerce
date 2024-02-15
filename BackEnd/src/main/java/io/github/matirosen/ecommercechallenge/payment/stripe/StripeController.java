@@ -30,7 +30,6 @@ public class StripeController {
     private String endpointSecret;
 
 
-
     @PostMapping("/charge")
     public ResponseEntity<PaymentResponse> charge(@RequestBody PaymentRequest paymentRequest) {
         try {
@@ -52,41 +51,67 @@ public class StripeController {
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleStripeWebhook(@RequestBody String payload, HttpServletRequest request) {
-        String sigHeader = request.getHeader("Stripe-Signature");
-        Event event;
-
-        try {
-            event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
-        } catch (SignatureVerificationException e) {
+        Event event = constructEvent(payload, request.getHeader("Stripe-Signature"));
+        if (event == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
-        StripeObject stripeObject;
-        if (dataObjectDeserializer.getObject().isPresent()) {
-            stripeObject = dataObjectDeserializer.getObject().get();
-        } else {
+        StripeObject stripeObject = getStripeObject(event);
+        if (stripeObject == null) {
             return ResponseEntity.badRequest().build();
         }
-
 
         if (event.getType().equals("checkout.session.completed")) {
-            Session session = (Session) stripeObject;
-            String userId = session.getMetadata().get("userId");
-            if (userId != null) {
-                SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
-                subscriptionRequest.setUserId(Long.parseLong(userId));
-                subscriptionRequest.setSubscriptionType(session.getMetadata().get("subscriptionType"));
-                try {
-                    subscriptionService.create(subscriptionRequest);
-                } catch (RuntimeException e) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-                }
-            }
+            return handleCheckoutSessionCompleted((Session) stripeObject);
+        } else if (event.getType().equals("invoice.payment_succeeded")) {
+            return handleInvoicePaymentSucceeded((Invoice) stripeObject);
         } else {
             return ResponseEntity.badRequest().build();
         }
+    }
 
+    private Event constructEvent(String payload, String sigHeader) {
+        try {
+            return Webhook.constructEvent(payload, sigHeader, endpointSecret);
+        } catch (SignatureVerificationException e) {
+            return null;
+        }
+    }
+
+    private StripeObject getStripeObject(Event event) {
+        EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+        return dataObjectDeserializer.getObject().isPresent() ? dataObjectDeserializer.getObject().get() : null;
+    }
+
+    private ResponseEntity<String> handleCheckoutSessionCompleted(Session session) {
+        String userId = session.getMetadata().get("userId");
+        if (userId != null) {
+            SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
+            subscriptionRequest.setUserId(Long.parseLong(userId));
+            subscriptionRequest.setSubscriptionType(session.getMetadata().get("subscriptionType"));
+            try {
+                subscriptionService.create(subscriptionRequest);
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            }
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    private ResponseEntity<String> handleInvoicePaymentSucceeded(Invoice invoice) {
+        double amount = invoice.getAmountPaid() / 100.0;
+        String currency = invoice.getCurrency();
+        String description = invoice.getDescription();
+        if (description == null) {
+            description = "No description";
+        }
+        String token = invoice.getPaymentIntent();
+        PaymentRequest paymentRequest = new PaymentRequest(amount, currency, description, token);
+        try {
+            paymentService.charge(paymentRequest);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
         return ResponseEntity.ok().build();
     }
 
