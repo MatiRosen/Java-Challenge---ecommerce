@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 
 import { useUserStore } from '../stores/user.js';
-import { useSubscriptionStore } from '../stores/subscription.js';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,12 +14,26 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: () => import('../views/RegisterView.vue')
+      component: () => import('../views/RegisterView.vue'),
+      beforeEnter: (to, from, next) => {
+        if (!useUserStore().isAuthenticated) {
+          next();
+        } else {
+          next({ name: 'home' });
+        }
+      }
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue')
+      component: () => import('../views/LoginView.vue'),
+      beforeEnter: (to, from, next) => {
+        if (!useUserStore().isAuthenticated) {
+          next();
+        } else {
+          next({ name: 'home' });
+        }
+      }
     },
     {
       path: '/profile',
@@ -50,6 +63,7 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       redirect: { name: 'home' }
     }
+    
   ]
 });
 

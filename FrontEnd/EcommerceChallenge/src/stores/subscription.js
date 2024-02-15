@@ -10,7 +10,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     }
   }),
   actions: {
-    subscribe(id, type, price, startDate, expirationDate) {
+    subscribeByFields(id, type, price, startDate, expirationDate) {
       Object.assign(this.subscription, {
         id,
         type,
@@ -18,6 +18,9 @@ export const useSubscriptionStore = defineStore('subscription', {
         startDate,
         expirationDate
       });
+    },
+    subscribe(subscription) {
+      Object.assign(this.subscription, subscription);
     },
     unsubscribe() {
       this.$reset();

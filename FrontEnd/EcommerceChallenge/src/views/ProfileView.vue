@@ -9,7 +9,7 @@
           <h5 class="card-title">{{ user.firstName }} {{ user.lastName }}</h5>
           <p class="card-text">Email: {{ user.email }}</p>
           <p class="card-text">Receive Newsletters: {{ user.receiveNewsletters ? 'Si' : 'No' }}</p>
-          <div v-if="userHasSubscription">
+          <div v-if="userHasSubscription()">
             <p class="card-text">Suscripción: {{ subscription.type }}</p>
             <p class="card-text">Desde : {{ formatDate(subscription.startDate) }}</p>
             <p class="card-text">Expira en: {{ formatDate(subscription.expirationDate) }}</p>
@@ -35,9 +35,7 @@ export default {
     const storeSubscription = useSubscriptionStore();
     const { subscription } = storeToRefs(storeSubscription);
 
-    const userHasSubscription = () => {
-      return useSubscriptionStore().userHasSubscription();
-    };
+    const { userHasSubscription } = storeSubscription;
 
     return {
       user,

@@ -40,14 +40,19 @@
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../stores/user'
+import { useSubscriptionStore } from '../stores/subscription'
 
 const storeUser = useUserStore()
 let { isAuthenticated } = storeToRefs(storeUser)
 const { removeUser } = storeUser
 
+const storeSubscription = useSubscriptionStore()
+const { unsubscribe } = storeSubscription
+
 const logout = () => {
   removeUser()
   localStorage.removeItem('token')
+  unsubscribe()
 }
 </script>
 

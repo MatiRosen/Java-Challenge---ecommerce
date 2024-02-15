@@ -7,12 +7,12 @@
           <div class="card text-white bg-dark mb-3">
             <div class="card-header text-center">{{ subscription.name }}</div>
             <div class="card-body text-center">
-              <h5 class="card-title">{{ subscription.price }}</h5>
+              <h5 class="card-title">${{ subscription.price }}</h5>
               <p class="card-text">{{ subscription.description }}</p>
               <button
                 class="btn btn-light"
                 :disabled="userHasSubscription()"
-                @click="subscribe(vue, subscription)"
+                @click="subscribe(subscription)"
               >
                 Suscribirse
               </button>
@@ -28,6 +28,8 @@
 import { ref, onMounted } from 'vue';
 import { useSubscriptionStore } from '../stores/subscription';
 import subscriptionService from '../services/subscriptionService';
+import paymentService from '../services/paymentService';
+import { jwtDecode } from 'jwt-decode';
 
 export default {
   setup() {
@@ -52,21 +54,24 @@ export default {
     };
   },
   methods: {
-    subscribe(vue, subscription) {
-      subscriptionService
-        .subscribe(subscription)
+    subscribe(subscription) {
+      const token = localStorage.getItem('token');
+      const userId = jwtDecode(token).id;
+
+      paymentService
+        .subscribe(subscription.name, userId, token)
         .then(function (response) {
-          vue.subscribe(response.data.id, response.data.name, response.data.price);
-          vue.$router.push('/profile');
+          const link = response.data;
+          window.location.href = link;
         })
         .catch(function (error) {
+          console.log(error);
           alert(error.response.data);
         });
     }
   }
 };
 </script>
-
 
 <style scoped>
 .gradient-custom {

@@ -62,7 +62,7 @@ export default {
 
     const storeSubscription = useSubscriptionStore();
     const { userHasSubscription } = storeSubscription;
-    const { subscribe } = storeSubscription;
+    const { subscribeByFields } = storeSubscription;
 
     return {
       user,
@@ -71,7 +71,7 @@ export default {
       userService,
       axios,
       userHasSubscription,
-      subscribe,
+      subscribeByFields,
       subscriptionService
     };
   },
@@ -101,19 +101,24 @@ export default {
 
           vue.addUser(userId, firstName, lastName, email, receiveNewsletter);
 
-          subscriptionService.getSubscriptionByUserId(userId).then(function (subscriptionResponse) {
-            vue.subscribe(
-              subscriptionResponse.data.id,
-              subscriptionResponse.data.type,
-              subscriptionResponse.data.price,
-              subscriptionResponse.data.startDate,
-              subscriptionResponse.data.expirationDate
-            );
-            vue.$router.push('/profile');
-          });
+          subscriptionService
+            .getSubscriptionByUserId(userId)
+            .then(function (subscriptionResponse) {
+              vue.subscribeByFields(
+                subscriptionResponse.data.id,
+                subscriptionResponse.data.type,
+                subscriptionResponse.data.price,
+                subscriptionResponse.data.startDate,
+                subscriptionResponse.data.expirationDate
+              );
+              vue.$router.push('/profile');
+            })
+            .catch(function (error) {
+              vue.$router.push('/profile');
+            });
         })
         .catch(function (error) {
-          alert(error);
+          alert(error.response.data);
         });
     }
   }
