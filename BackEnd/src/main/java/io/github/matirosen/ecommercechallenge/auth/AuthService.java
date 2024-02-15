@@ -19,6 +19,10 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(RegisterRequest request) {
+        if (!isValidPassword(request.getPassword())) {
+            throw new RuntimeException("Invalid password. Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number.");
+        }
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -27,6 +31,11 @@ public class AuthService {
                 .receiveNewsletter(request.isReceiveNewsletter())
                 .build();
 
+
+        userRepository.findByEmail(request.getEmail()).ifPresent(u -> {
+            throw new RuntimeException("Email already in use");
+        });
+
         userRepository.save(user);
 
         return AuthResponse.builder()
@@ -34,7 +43,6 @@ public class AuthService {
                 .build();
     }
 
-    // TODO crear exception
     public AuthResponse login(LoginRequest request) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         authenticationManager.authenticate(usernamePasswordAuthenticationToken);
@@ -42,5 +50,9 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(jwtService.getToken(user))
                 .build();
+    }
+
+    private boolean isValidPassword(String password) {
+        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$");
     }
 }
