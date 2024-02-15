@@ -26,7 +26,7 @@ try {
   const { subscribeByFields } = storeSubscription;
 
   subscriptionService
-    .getSubscriptionByUserId(userId)
+    .getSubscriptionByUserId(userId, token)
     .then(function (subscriptionResponse) {
       subscribeByFields(
         subscriptionResponse.data.id,

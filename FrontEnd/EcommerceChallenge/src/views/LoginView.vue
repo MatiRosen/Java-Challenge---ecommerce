@@ -102,7 +102,7 @@ export default {
           vue.addUser(userId, firstName, lastName, email, receiveNewsletter);
 
           subscriptionService
-            .getSubscriptionByUserId(userId)
+            .getSubscriptionByUserId(userId, token)
             .then(function (subscriptionResponse) {
               vue.subscribeByFields(
                 subscriptionResponse.data.id,
